@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,43 @@ import {
   Switch,
   ScrollView,
   AccessibilityRole,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDebugStore } from '../../store/useDebugStore';
 import { careSlotKeys } from '../../api/queries';
 
+interface VersionItem {
+  tag: string;
+  version: string;
+  commit: string;
+  date: string;
+  path: string;
+  isLatest: boolean;
+}
+
 export const DebugToolbar: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [versions, setVersions] = useState<VersionItem[]>([]);
+  const [currentPath, setCurrentPath] = useState<string>('/careslot/');
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname);
+      fetch('/careslot/versions.json')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => setVersions(data))
+        .catch(() => {
+          // Fallback if not on baseUrl
+          fetch('/versions.json')
+            .then((res) => (res.ok ? res.json() : []))
+            .then((data) => setVersions(data))
+            .catch(() => {});
+        });
+    }
+  }, [modalVisible]);
 
   const {
     latencyMs,
@@ -190,6 +218,74 @@ export const DebugToolbar: React.FC = () => {
                   }}
                   trackColor={{ false: '#CBD5E1', true: '#0284C7' }}
                 />
+              </View>
+
+              {/* Deployment Versioning & Switching */}
+              <View style={styles.versionSection}>
+                <View style={styles.versionHeaderRow}>
+                  <MaterialCommunityIcons name="source-branch" size={18} color="#0284C7" />
+                  <Text style={styles.versionSectionTitle}>Deployments & Version Switcher</Text>
+                </View>
+                <Text style={styles.settingDesc}>
+                  Switch between historical and latest production releases on GitHub Pages.
+                </Text>
+
+                <View style={styles.versionList}>
+                  {versions.length === 0 ? (
+                    <View style={styles.versionItemActive}>
+                      <View style={styles.versionItemLeft}>
+                        <Text style={styles.versionTag}>v1.0.0 (Latest)</Text>
+                        <Text style={styles.versionDate}>Current Active Release</Text>
+                      </View>
+                      <View style={styles.activeTag}>
+                        <Text style={styles.activeTagText}>Active</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    versions.map((ver) => {
+                      const isCurrent =
+                        ver.isLatest
+                          ? currentPath === '/careslot/' || currentPath === '/careslot'
+                          : currentPath.includes(ver.tag);
+
+                      return (
+                        <TouchableOpacity
+                          key={ver.tag}
+                          onPress={() => {
+                            if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                              window.location.href = ver.isLatest ? '/careslot/' : ver.path;
+                            }
+                          }}
+                          style={[
+                            styles.versionItem,
+                            isCurrent && styles.versionItemActive,
+                          ]}
+                        >
+                          <View style={styles.versionItemLeft}>
+                            <View style={styles.tagBadgeRow}>
+                              <Text style={styles.versionTag}>{ver.tag}</Text>
+                              {ver.isLatest && (
+                                <View style={styles.latestPill}>
+                                  <Text style={styles.latestPillText}>Latest</Text>
+                                </View>
+                              )}
+                            </View>
+                            <Text style={styles.versionDate}>
+                              Commit: {ver.commit} • {new Date(ver.date).toLocaleDateString()}
+                            </Text>
+                          </View>
+                          {isCurrent ? (
+                            <View style={styles.activeTag}>
+                              <Text style={styles.activeTagText}>Active</Text>
+                            </View>
+                          ) : (
+                            <Text style={styles.switchLinkText}>Switch →</Text>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                </View>
               </View>
             </ScrollView>
 
@@ -390,6 +486,86 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  versionSection: {
+    marginTop: 18,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  versionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  versionSectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginLeft: 6,
+  },
+  versionList: {
+    marginTop: 12,
+    gap: 8,
+  },
+  versionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 12,
+  },
+  versionItemActive: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#0284C7',
+  },
+  versionItemLeft: {
+    flex: 1,
+  },
+  tagBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  versionTag: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  latestPill: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  latestPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  versionDate: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  activeTag: {
+    backgroundColor: '#0284C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  activeTagText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  switchLinkText: {
+    color: '#0284C7',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
 

@@ -14,6 +14,7 @@ import { BookingFormScreen } from './src/screens/BookingFormScreen';
 import { ConfirmationScreen } from './src/screens/ConfirmationScreen';
 import { FavoritesScreen } from './src/screens/FavoritesScreen';
 import { useFavoritesStore } from './src/store/useFavoritesStore';
+import { VersionBanner } from './src/components/ui/VersionBanner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +82,7 @@ function MainTabsNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
+      <VersionBanner />
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
           <StatusBar style="dark" />

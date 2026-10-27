@@ -22,7 +22,11 @@ const server = http.createServer((req, res) => {
   }
   if (!reqPath || reqPath === '/') reqPath = '/index.html';
 
-  const filePath = path.join(DIST, reqPath);
+  let filePath = path.join(DIST, reqPath);
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(filePath, 'index.html');
+  }
+
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     const ext = path.extname(filePath);
     res.writeHead(200, {

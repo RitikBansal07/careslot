@@ -1,4 +1,4 @@
-name: Deploy CareSlot to GitHub Pages
+name: Test & Deploy CareSlot with Versioning
 
 on:
   push:
@@ -7,12 +7,15 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
-# Allow GITHUB_TOKEN to deploy to GitHub Pages
 permissions:
   contents: write
 
 jobs:
-  test-and-deploy:
+  # ==========================================
+  # 1. TEST GATE: Only proceed if 100% pass
+  # ==========================================
+  test:
+    name: Run Unit, Component & Integration Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -27,16 +30,58 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Unit & Component Tests
-        run: npm test -- --ci --coverage
+      - name: TypeScript Typecheck
+        run: npx tsc --noEmit
+
+      - name: Execute Jest Test Suite
+        run: npm test -- --ci --maxWorkers=2
+
+  # ==========================================
+  # 2. VERSIONED DEPLOY: Only runs if tests pass
+  # ==========================================
+  deploy:
+    name: Build & Deploy with Version History
+    needs: test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
       - name: Build Static Web Bundle
         run: npx expo export -p web
 
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      # Retrieve previous versions.json from gh-pages branch if it exists
+      - name: Fetch previous deployment history
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          git checkout gh-pages -- versions.json || true
+          if [ -f versions.json ]; then
+            cp versions.json dist/versions.json
+          fi
+          git checkout -f ${{ github.ref_name }}
+        continue-on-error: true
+
+      # Archive version and update versions.json
+      - name: Prepare Version Archive
+        run: node scripts/prepare-versioned-deploy.js
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+
+      # Deploy to GitHub Pages preserving historical version directories
+      - name: Deploy to GitHub Pages (keep historical versions)
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-
+          keep_files: true
