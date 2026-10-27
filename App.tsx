@@ -13,6 +13,9 @@ import { ProviderDetailScreen } from './src/screens/ProviderDetailScreen';
 import { BookingFormScreen } from './src/screens/BookingFormScreen';
 import { ConfirmationScreen } from './src/screens/ConfirmationScreen';
 import { FavoritesScreen } from './src/screens/FavoritesScreen';
+import { TelehealthWaitingRoomScreen } from './src/screens/TelehealthWaitingRoomScreen';
+import { TelehealthCallScreen } from './src/screens/TelehealthCallScreen';
+import { TelehealthSummaryScreen } from './src/screens/TelehealthSummaryScreen';
 import { useFavoritesStore } from './src/store/useFavoritesStore';
 import { VersionBanner } from './src/components/ui/VersionBanner';
 
@@ -107,6 +110,21 @@ export default function App() {
               name="Confirmation"
               component={ConfirmationScreen}
               options={{ gestureEnabled: false, animation: 'fade' }}
+            />
+            <Stack.Screen
+              name="TelehealthWaitingRoom"
+              component={TelehealthWaitingRoomScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+              name="TelehealthCall"
+              component={TelehealthCallScreen}
+              options={{ gestureEnabled: false, animation: 'fade' }}
+            />
+            <Stack.Screen
+              name="TelehealthSummary"
+              component={TelehealthSummaryScreen}
+              options={{ gestureEnabled: false, animation: 'slide_from_bottom' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

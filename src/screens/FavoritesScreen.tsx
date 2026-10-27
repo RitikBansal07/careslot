@@ -148,20 +148,46 @@ export const FavoritesScreen: React.FC = () => {
                         <Text style={styles.bookingDoctorName}>{item.provider.name}</Text>
                         <Text style={styles.bookingSpecialty}>{item.provider.specialty}</Text>
                       </View>
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          isCancelled ? styles.statusCancelled : styles.statusConfirmed,
-                        ]}
-                      >
-                        <Text
+                      <View style={styles.badgeCol}>
+                        <View
                           style={[
-                            styles.statusText,
-                            isCancelled ? styles.statusTextCancelled : styles.statusTextConfirmed,
+                            styles.visitTypeBadge,
+                            item.visitType === 'telehealth'
+                              ? styles.visitTypeBadgeTelehealth
+                              : styles.visitTypeBadgeInPerson,
                           ]}
                         >
-                          {isCancelled ? 'Cancelled' : 'Confirmed'}
-                        </Text>
+                          <MaterialCommunityIcons
+                            name={item.visitType === 'telehealth' ? 'video-outline' : 'hospital-building'}
+                            size={12}
+                            color={item.visitType === 'telehealth' ? '#0284C7' : '#0F766E'}
+                          />
+                          <Text
+                            style={[
+                              styles.visitTypeText,
+                              item.visitType === 'telehealth'
+                                ? styles.visitTypeTextTelehealth
+                                : styles.visitTypeTextInPerson,
+                            ]}
+                          >
+                            {item.visitType === 'telehealth' ? 'Telehealth' : 'In-Person'}
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            isCancelled ? styles.statusCancelled : styles.statusConfirmed,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.statusText,
+                              isCancelled ? styles.statusTextCancelled : styles.statusTextConfirmed,
+                            ]}
+                          >
+                            {isCancelled ? 'Cancelled' : 'Confirmed'}
+                          </Text>
+                        </View>
                       </View>
                     </View>
 
@@ -177,7 +203,9 @@ export const FavoritesScreen: React.FC = () => {
                     <View style={styles.metaRow}>
                       <MaterialCommunityIcons name="map-marker-outline" size={16} color="#64748B" />
                       <Text style={styles.metaText} numberOfLines={1}>
-                        {item.provider.location.clinicName}
+                        {item.visitType === 'telehealth'
+                          ? 'CareSlot Virtual HD Room (Encrypted)'
+                          : item.provider.location.clinicName}
                       </Text>
                     </View>
 
@@ -187,6 +215,24 @@ export const FavoritesScreen: React.FC = () => {
                         {item.reason}
                       </Text>
                     </View>
+
+                    {/* Join Telehealth Video Call CTA */}
+                    {!isCancelled && item.visitType === 'telehealth' && (
+                      <View style={styles.telehealthActionRow}>
+                        <Button
+                          title="Join Video Call"
+                          onPress={() =>
+                            navigation.navigate('TelehealthWaitingRoom', {
+                              bookingId: item.bookingId,
+                            })
+                          }
+                          variant="primary"
+                          size="sm"
+                          icon={<MaterialCommunityIcons name="video" size={16} color="#FFFFFF" />}
+                          style={styles.joinCallBtn}
+                        />
+                      </View>
+                    )}
 
                     <View style={styles.bookingFooterRow}>
                       <Text style={styles.refCode}>Ref: #{item.bookingId}</Text>
@@ -315,6 +361,41 @@ const styles = StyleSheet.create({
   doctorInfoCol: {
     flex: 1,
     marginRight: 10,
+  },
+  badgeCol: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  visitTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  visitTypeBadgeTelehealth: {
+    backgroundColor: '#E0F2FE',
+  },
+  visitTypeBadgeInPerson: {
+    backgroundColor: '#CCFBF1',
+  },
+  visitTypeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  visitTypeTextTelehealth: {
+    color: '#0369A1',
+  },
+  visitTypeTextInPerson: {
+    color: '#0F766E',
+  },
+  telehealthActionRow: {
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  joinCallBtn: {
+    backgroundColor: '#0284C7',
   },
   bookingDoctorName: {
     fontSize: 16,

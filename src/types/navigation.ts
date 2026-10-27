@@ -12,6 +12,9 @@ export type RootStackParamList = {
   ProviderDetail: { providerId: string };
   BookingForm: { providerId: string; slotId: string };
   Confirmation: { bookingId: string };
+  TelehealthWaitingRoom: { bookingId: string };
+  TelehealthCall: { bookingId: string };
+  TelehealthSummary: { bookingId: string; durationSeconds: number };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
@@ -29,4 +32,3 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
-

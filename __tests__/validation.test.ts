@@ -7,6 +7,7 @@ describe('Booking Form Zod Validation Schema', () => {
     phone: '555-123-4567',
     reason: 'Annual medical wellness checkup',
     insuranceProvider: 'Blue Cross Blue Shield',
+    visitType: 'telehealth' as const,
     notes: 'No specific accommodations required',
     agreeToTerms: true,
   };
@@ -75,6 +76,26 @@ describe('Booking Form Zod Validation Schema', () => {
     const { notes, ...dataWithoutNotes } = validData;
     const result = bookingFormSchema.safeParse(dataWithoutNotes);
     expect(result.success).toBe(true);
+  });
+
+  it('validates telehealth and in-person visit types correctly', () => {
+    const telehealthResult = bookingFormSchema.safeParse({
+      ...validData,
+      visitType: 'telehealth',
+    });
+    expect(telehealthResult.success).toBe(true);
+
+    const inPersonResult = bookingFormSchema.safeParse({
+      ...validData,
+      visitType: 'in-person',
+    });
+    expect(inPersonResult.success).toBe(true);
+
+    const invalidResult = bookingFormSchema.safeParse({
+      ...validData,
+      visitType: 'carrier-pigeon' as any,
+    });
+    expect(invalidResult.success).toBe(false);
   });
 });
 

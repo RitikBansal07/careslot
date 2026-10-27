@@ -10,6 +10,8 @@ export type Specialty =
   | 'Ophthalmology'
   | 'Dentistry';
 
+export type VisitType = 'in-person' | 'telehealth';
+
 export interface TimeSlot {
   id: string;
   providerId: string;
@@ -52,6 +54,7 @@ export interface BookingRequest {
   phone: string;
   reason: string;
   insuranceProvider: string;
+  visitType?: VisitType;
   notes?: string;
 }
 
@@ -64,6 +67,12 @@ export interface BookingConfirmation {
   phone: string;
   reason: string;
   insuranceProvider: string;
+  visitType: VisitType;
+  telehealthChannelId?: string;
+  telehealthToken?: string;
+  telehealthDoctorStatus?: 'waiting' | 'in-room' | 'completed';
+  consultationNotes?: string;
+  prescriptions?: string[];
   notes?: string;
   bookedAt: string;
   status: 'confirmed' | 'cancelled';
@@ -74,4 +83,3 @@ export interface ProviderFilterParams {
   search?: string;
   onlyFavorites?: boolean;
 }
-

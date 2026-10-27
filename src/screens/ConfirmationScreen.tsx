@@ -195,6 +195,35 @@ export const ConfirmationScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* Telehealth Video Action Card if Telehealth booking */}
+        {booking.visitType === 'telehealth' && (
+          <View style={styles.telehealthCtaCard}>
+            <View style={styles.telehealthHeader}>
+              <View style={styles.telehealthIconBox}>
+                <MaterialCommunityIcons name="video-wireless" size={24} color="#0284C7" />
+              </View>
+              <View style={styles.telehealthHeaderTextCol}>
+                <Text style={styles.telehealthTitle}>Telehealth Video Room Ready</Text>
+                <Text style={styles.telehealthDesc}>
+                  Room: #{booking.telehealthChannelId || `careslot-${booking.bookingId.toLowerCase()}`}
+                </Text>
+              </View>
+            </View>
+            <Button
+              title="Enter Virtual Waiting Room"
+              onPress={() =>
+                navigation.navigate('TelehealthWaitingRoom', {
+                  bookingId: booking.bookingId,
+                })
+              }
+              variant="primary"
+              size="lg"
+              icon={<MaterialCommunityIcons name="video-account" size={20} color="#FFFFFF" />}
+              style={styles.joinVideoBtn}
+            />
+          </View>
+        )}
+
         {/* Primary Navigation Actions */}
         <View style={styles.ctaGroup}>
           <Button
@@ -357,5 +386,44 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   secondaryCtaBtn: {},
+  telehealthCtaCard: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#0284C7',
+    marginBottom: 16,
+  },
+  telehealthHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  telehealthIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  telehealthHeaderTextCol: {
+    flex: 1,
+  },
+  telehealthTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  telehealthDesc: {
+    fontSize: 12,
+    color: '#0284C7',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  joinVideoBtn: {
+    backgroundColor: '#0284C7',
+  },
 });
 

@@ -51,12 +51,14 @@ export const BookingFormScreen: React.FC = () => {
       phone: '',
       reason: '',
       insuranceProvider: 'Blue Cross Blue Shield',
+      visitType: 'telehealth',
       notes: '',
       agreeToTerms: false,
     },
   });
 
   const selectedInsurance = watch('insuranceProvider');
+  const selectedVisitType = watch('visitType');
   const agreedToTerms = watch('agreeToTerms');
 
   if (isLoading || !data) {
@@ -93,6 +95,7 @@ export const BookingFormScreen: React.FC = () => {
         phone: formData.phone,
         reason: formData.reason,
         insuranceProvider: formData.insuranceProvider,
+        visitType: formData.visitType,
         notes: formData.notes,
       });
 
@@ -151,8 +154,73 @@ export const BookingFormScreen: React.FC = () => {
               </View>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Visit Type</Text>
-                <Text style={styles.summaryValue}>In-Person</Text>
+                <Text style={styles.summaryValue}>
+                  {selectedVisitType === 'telehealth' ? 'Telehealth Video' : 'In-Person Clinic'}
+                </Text>
               </View>
+            </View>
+          </View>
+
+          {/* Visit Mode Selector (Telehealth Agora vs In-Person) */}
+          <View style={styles.visitTypeCard}>
+            <Text style={styles.visitTypeTitle}>Select Consultation Format</Text>
+            <View style={styles.visitTypeRow}>
+              <TouchableOpacity
+                onPress={() => setValue('visitType', 'telehealth')}
+                style={[
+                  styles.visitOption,
+                  selectedVisitType === 'telehealth' && styles.visitOptionSelected,
+                ]}
+              >
+                <View style={styles.visitOptionTop}>
+                  <MaterialCommunityIcons
+                    name="video-wireless-outline"
+                    size={22}
+                    color={selectedVisitType === 'telehealth' ? '#0284C7' : '#64748B'}
+                  />
+                  <View style={styles.telehealthBadge}>
+                    <Text style={styles.telehealthBadgeText}>Fastest</Text>
+                  </View>
+                </View>
+                <Text
+                  style={[
+                    styles.visitOptionName,
+                    selectedVisitType === 'telehealth' && styles.visitOptionNameSelected,
+                  ]}
+                >
+                  Telehealth Video
+                </Text>
+                <Text style={styles.visitOptionDesc}>
+                  Join 1-on-1 Agora video consult from browser or phone
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setValue('visitType', 'in-person')}
+                style={[
+                  styles.visitOption,
+                  selectedVisitType === 'in-person' && styles.visitOptionSelected,
+                ]}
+              >
+                <View style={styles.visitOptionTop}>
+                  <MaterialCommunityIcons
+                    name="hospital-building"
+                    size={22}
+                    color={selectedVisitType === 'in-person' ? '#0284C7' : '#64748B'}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.visitOptionName,
+                    selectedVisitType === 'in-person' && styles.visitOptionNameSelected,
+                  ]}
+                >
+                  In-Person Visit
+                </Text>
+                <Text style={styles.visitOptionDesc}>
+                  Visit {provider.location.clinicName} in {provider.location.city}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -570,6 +638,67 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     marginTop: 16,
+  },
+  visitTypeCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  visitTypeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 10,
+  },
+  visitTypeRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  visitOption: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    padding: 12,
+  },
+  visitOptionSelected: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#0284C7',
+  },
+  visitOptionTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  telehealthBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  telehealthBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  visitOptionName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 3,
+  },
+  visitOptionNameSelected: {
+    color: '#0284C7',
+  },
+  visitOptionDesc: {
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 14,
   },
 });
 

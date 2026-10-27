@@ -141,6 +141,9 @@ class MockCareSlotApi implements ICareSlotApi {
 
     const bookingId = `CS-${Math.floor(100000 + Math.random() * 900000)}`;
 
+    const visitType = request.visitType || 'telehealth';
+    const isTelehealth = visitType === 'telehealth';
+
     const confirmation: BookingConfirmation = {
       bookingId,
       provider,
@@ -150,6 +153,19 @@ class MockCareSlotApi implements ICareSlotApi {
       phone: request.phone,
       reason: request.reason,
       insuranceProvider: request.insuranceProvider,
+      visitType,
+      telehealthChannelId: isTelehealth ? `careslot-${bookingId.toLowerCase()}` : undefined,
+      telehealthDoctorStatus: isTelehealth ? 'waiting' : undefined,
+      consultationNotes: isTelehealth
+        ? `Patient presented with ${request.reason}. Comprehensive clinical review conducted. Advised adequate hydration, rest, and recommended follow-up in 10 days if symptoms persist.`
+        : undefined,
+      prescriptions: isTelehealth
+        ? [
+            'Supportive Care Protocol — 1 dose oral daily for 5 days',
+            'Symptomatic Hydration Therapy (electrolytes PRN)',
+            'Follow-up wellness consult in 2 weeks',
+          ]
+        : undefined,
       notes: request.notes,
       bookedAt: new Date().toISOString(),
       status: 'confirmed',

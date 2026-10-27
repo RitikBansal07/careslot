@@ -26,6 +26,7 @@ export const bookingFormSchema = z.object({
   insuranceProvider: z
     .string()
     .min(1, 'Please select or enter an insurance option'),
+  visitType: z.enum(['in-person', 'telehealth']),
   notes: z
     .string()
     .max(500, 'Notes cannot exceed 500 characters')
