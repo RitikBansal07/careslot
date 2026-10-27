@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version Bump Selection (choose "major" to increment major version)'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - 'auto'
+          - 'major'
+          - 'minor'
 
 permissions:
   contents: write
@@ -71,12 +81,14 @@ jobs:
           git checkout -f ${{ github.ref_name }}
         continue-on-error: true
 
-      # Archive version and update versions.json
+      # Archive version and update versions.json with user's major/minor choice
       - name: Prepare Version Archive
         run: node scripts/prepare-versioned-deploy.js
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          BUMP_TYPE: ${{ inputs.bump_type || 'auto' }}
 
       # Deploy to GitHub Pages preserving historical version directories
       - name: Deploy to GitHub Pages (keep historical versions)
