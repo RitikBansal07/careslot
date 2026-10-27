@@ -11,6 +11,7 @@ export interface AuthUser {
   doctorId?: string;
   specialty?: string;
   licenseNumber?: string;
+  clinicName?: string;
 }
 
 export interface AuthSession {
@@ -24,6 +25,29 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface PatientSignupPayload {
+  role: 'patient';
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+}
+
+export interface DoctorSignupPayload {
+  role: 'doctor';
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  specialty: string;
+  clinicName: string;
+  licenseNumber: string;
+  consultationFee: number;
+  bio?: string;
+}
+
+export type SignupPayload = PatientSignupPayload | DoctorSignupPayload;
+
 export interface MockAccount {
   user: AuthUser;
   password: string;
@@ -31,4 +55,5 @@ export interface MockAccount {
   badgeColor: string;
   description: string;
 }
+
 

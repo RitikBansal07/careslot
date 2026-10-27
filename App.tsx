@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -17,6 +18,7 @@ import { TelehealthWaitingRoomScreen } from './src/screens/TelehealthWaitingRoom
 import { TelehealthCallScreen } from './src/screens/TelehealthCallScreen';
 import { TelehealthSummaryScreen } from './src/screens/TelehealthSummaryScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { SignupScreen } from './src/screens/SignupScreen';
 import { DoctorPortalScreen } from './src/screens/DoctorPortalScreen';
 import { AdminPortalScreen } from './src/screens/AdminPortalScreen';
 import { useFavoritesStore } from './src/store/useFavoritesStore';
@@ -87,9 +89,24 @@ function MainTabsNavigator() {
 }
 
 export default function App() {
+  const { isAuthenticated, isInitialized, user } = useAuthStore();
+
   useEffect(() => {
     useAuthStore.getState().initialize();
   }, []);
+
+  if (!isInitialized) {
+    return (
+      <SafeAreaProvider>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
+          <ActivityIndicator size="large" color="#0284C7" />
+          <Text style={{ marginTop: 14, color: '#64748B', fontWeight: '700', fontSize: 14 }}>
+            Starting CareSlot Portal...
+          </Text>
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   return (
     <SafeAreaProvider>
@@ -103,52 +120,110 @@ export default function App() {
               animation: 'slide_from_right',
             }}
           >
-            <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
-            <Stack.Screen
-              name="ProviderDetail"
-              component={ProviderDetailScreen}
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="BookingForm"
-              component={BookingFormScreen}
-              options={{ animation: 'slide_from_bottom' }}
-            />
-            <Stack.Screen
-              name="Confirmation"
-              component={ConfirmationScreen}
-              options={{ gestureEnabled: false, animation: 'fade' }}
-            />
-            <Stack.Screen
-              name="TelehealthWaitingRoom"
-              component={TelehealthWaitingRoomScreen}
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="TelehealthCall"
-              component={TelehealthCallScreen}
-              options={{ gestureEnabled: false, animation: 'fade' }}
-            />
-            <Stack.Screen
-              name="TelehealthSummary"
-              component={TelehealthSummaryScreen}
-              options={{ gestureEnabled: false, animation: 'slide_from_bottom' }}
-            />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ animation: 'slide_from_bottom' }}
-            />
-            <Stack.Screen
-              name="DoctorPortal"
-              component={DoctorPortalScreen}
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="AdminPortal"
-              component={AdminPortalScreen}
-              options={{ animation: 'slide_from_right' }}
-            />
+            {!isAuthenticated ? (
+              // ==========================================
+              // AUTHENTICATION GATE:
+              // Only Login & Signup accessible when unauthenticated
+              // ==========================================
+              <>
+                <Stack.Screen
+                  name="Login"
+                  component={LoginScreen}
+                  options={{ animation: 'fade' }}
+                />
+                <Stack.Screen
+                  name="Signup"
+                  component={SignupScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+              </>
+            ) : user?.role === 'doctor' ? (
+              // ==========================================
+              // DOCTOR APPLICATION HIERARCHY
+              // ==========================================
+              <>
+                <Stack.Screen
+                  name="DoctorPortal"
+                  component={DoctorPortalScreen}
+                  options={{ animation: 'fade' }}
+                />
+                <Stack.Screen
+                  name="TelehealthCall"
+                  component={TelehealthCallScreen}
+                  options={{ gestureEnabled: false, animation: 'fade' }}
+                />
+                <Stack.Screen
+                  name="TelehealthSummary"
+                  component={TelehealthSummaryScreen}
+                  options={{ gestureEnabled: false, animation: 'slide_from_bottom' }}
+                />
+                <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+                <Stack.Screen
+                  name="ProviderDetail"
+                  component={ProviderDetailScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+              </>
+            ) : user?.role === 'admin' ? (
+              // ==========================================
+              // ADMIN APPLICATION HIERARCHY
+              // ==========================================
+              <>
+                <Stack.Screen
+                  name="AdminPortal"
+                  component={AdminPortalScreen}
+                  options={{ animation: 'fade' }}
+                />
+                <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+                <Stack.Screen
+                  name="ProviderDetail"
+                  component={ProviderDetailScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="DoctorPortal"
+                  component={DoctorPortalScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+              </>
+            ) : (
+              // ==========================================
+              // PATIENT APPLICATION HIERARCHY (Default)
+              // ==========================================
+              <>
+                <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+                <Stack.Screen
+                  name="ProviderDetail"
+                  component={ProviderDetailScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="BookingForm"
+                  component={BookingFormScreen}
+                  options={{ animation: 'slide_from_bottom' }}
+                />
+                <Stack.Screen
+                  name="Confirmation"
+                  component={ConfirmationScreen}
+                  options={{ gestureEnabled: false, animation: 'fade' }}
+                />
+                <Stack.Screen
+                  name="TelehealthWaitingRoom"
+                  component={TelehealthWaitingRoomScreen}
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="TelehealthCall"
+                  component={TelehealthCallScreen}
+                  options={{ gestureEnabled: false, animation: 'fade' }}
+                />
+                <Stack.Screen
+                  name="TelehealthSummary"
+                  component={TelehealthSummaryScreen}
+                  options={{ gestureEnabled: false, animation: 'slide_from_bottom' }}
+                />
+              </>
+            )}
           </Stack.Navigator>
         </NavigationContainer>
       </QueryClientProvider>

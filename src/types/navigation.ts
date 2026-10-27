@@ -16,6 +16,7 @@ export type RootStackParamList = {
   TelehealthCall: { bookingId: string };
   TelehealthSummary: { bookingId: string; durationSeconds: number };
   Login: undefined;
+  Signup: { initialRole?: 'patient' | 'doctor' } | undefined;
   DoctorPortal: undefined;
   AdminPortal: undefined;
 };

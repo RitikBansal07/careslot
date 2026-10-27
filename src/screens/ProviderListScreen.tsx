@@ -32,7 +32,7 @@ export const ProviderListScreen: React.FC = () => {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   const {
     data: allProviders,
@@ -91,13 +91,13 @@ export const ProviderListScreen: React.FC = () => {
             <Text style={styles.headerSubtitle}>Book trusted healthcare providers in seconds</Text>
           </View>
 
-          {/* User Auth Portal / Login Button */}
-          {isAuthenticated && user ? (
+          {/* User Auth Portal / Logout Pill */}
+          {isAuthenticated && user && (
             <TouchableOpacity
               onPress={() => {
                 if (user.role === 'doctor') navigation.navigate('DoctorPortal');
                 else if (user.role === 'admin') navigation.navigate('AdminPortal');
-                else navigation.navigate('Login');
+                else logout();
               }}
               style={[
                 styles.userPill,
@@ -108,7 +108,11 @@ export const ProviderListScreen: React.FC = () => {
                   : styles.userPillPatient,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`Logged in as ${user.name}`}
+              accessibilityLabel={
+                user.role === 'patient'
+                  ? `Signed in as ${user.name}. Tap to sign out.`
+                  : `Signed in as ${user.name}. Tap to open portal.`
+              }
             >
               <MaterialCommunityIcons
                 name={
@@ -142,18 +146,8 @@ export const ProviderListScreen: React.FC = () => {
                   ? 'Dr. Portal'
                   : user.role === 'admin'
                   ? 'Admin'
-                  : user.name.split(' ')[0]}
+                  : `${user.name.split(' ')[0]} (Sign Out)`}
               </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Login')}
-              style={styles.loginPill}
-              accessibilityRole="button"
-              accessibilityLabel="Sign in or test mock accounts"
-            >
-              <MaterialCommunityIcons name="login-variant" size={15} color="#0284C7" />
-              <Text style={styles.loginPillText}>Sign In</Text>
             </TouchableOpacity>
           )}
         </View>

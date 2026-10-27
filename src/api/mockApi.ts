@@ -9,7 +9,9 @@ import {
 import {
   generateInitialSlots,
   generateInitialProviders,
+  SLOT_SCHEDULES,
 } from './mockData';
+import { getNextSevenDays } from '../utils/dateHelpers';
 import { useDebugStore } from '../store/useDebugStore';
 
 class MockCareSlotApi implements ICareSlotApi {
@@ -178,6 +180,65 @@ class MockCareSlotApi implements ICareSlotApi {
     await this.applyChaosAndLatency();
     // Booking cancellation logic
     return true;
+  }
+
+  /**
+   * Registers a newly signed up Doctor into the in-memory provider directory & time slots
+   */
+  registerDoctor(data: {
+    name: string;
+    specialty: any;
+    clinicName: string;
+    consultationFee: number;
+    phone: string;
+    bio?: string;
+  }): Provider {
+    const id = `p-${Date.now()}`;
+    const dates = getNextSevenDays();
+    const newSlots: TimeSlot[] = [];
+
+    dates.forEach((dateStr) => {
+      SLOT_SCHEDULES.forEach((sched) => {
+        newSlots.push({
+          id: `slot-${id}-${dateStr}-${sched.startTime.replace(/[^a-zA-Z0-9]/g, '')}`,
+          providerId: id,
+          date: dateStr,
+          startTime: sched.startTime,
+          endTime: sched.endTime,
+          period: sched.period,
+          isAvailable: true,
+        });
+      });
+    });
+
+    this.slots = [...newSlots, ...this.slots];
+
+    const newProvider: Provider = {
+      id,
+      name: data.name.startsWith('Dr.') ? data.name : `Dr. ${data.name}`,
+      title: 'MD, FACP',
+      specialty: data.specialty,
+      rating: 5.0,
+      reviewCount: 1,
+      experienceYears: 8,
+      bio: data.bio || `Specialist in ${data.specialty} providing compassionate telehealth and clinical care.`,
+      location: {
+        clinicName: data.clinicName || 'CareSlot Health Center',
+        address: '100 Medical Plaza, Suite 400',
+        city: 'New York',
+        state: 'NY',
+        distanceMiles: 1.2,
+      },
+      consultationFee: data.consultationFee || 130,
+      avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400',
+      languages: ['English'],
+      acceptedInsurances: ['Blue Cross Blue Shield', 'Aetna', 'UnitedHealthcare'],
+      nextAvailableDate: dates[0] || 'Today',
+      availableSlotsCount: newSlots.length,
+    };
+
+    this.providers = [newProvider, ...this.providers];
+    return newProvider;
   }
 
   /**

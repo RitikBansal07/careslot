@@ -149,6 +149,54 @@ describe('Authentication & HTTP Cookie Token Architecture', () => {
       expect(useAuthStore.getState().user?.email).toBe(mockPatient.email);
       expect(useAuthStore.getState().token).toBe(token);
     });
+
+    it('registers a new patient successfully and establishes session', async () => {
+      const newPatient = await useAuthStore.getState().signup({
+        role: 'patient',
+        name: 'Jordan Lee',
+        email: 'jordan.lee@example.com',
+        password: 'password123',
+        phone: '(555) 333-4444',
+      });
+
+      expect(newPatient.role).toBe('patient');
+      expect(newPatient.name).toBe('Jordan Lee');
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
+
+      const cookieToken = await cookieStorage.getCookie(AUTH_COOKIE_NAME);
+      expect(cookieToken).toBeDefined();
+    });
+
+    it('registers a new doctor, adds provider to directory with slots, and establishes session', async () => {
+      const newDoctor = await useAuthStore.getState().signup({
+        role: 'doctor',
+        name: 'Dr. Arthur Miller',
+        email: 'arthur.miller@clinic.com',
+        password: 'doctorpass123',
+        phone: '(555) 777-8888',
+        specialty: 'Cardiology',
+        clinicName: 'Downtown Cardiology Group',
+        licenseNumber: 'MD-NY-99120',
+        consultationFee: 150,
+      });
+
+      expect(newDoctor.role).toBe('doctor');
+      expect(newDoctor.doctorId).toBeDefined();
+      expect(newDoctor.specialty).toBe('Cardiology');
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    });
+
+    it('strictly prohibits creating admin accounts via signup', async () => {
+      await expect(
+        useAuthStore.getState().signup({
+          role: 'admin' as any,
+          name: 'Hacker',
+          email: 'fake.admin@careslot.com',
+          password: 'pass',
+          phone: '000',
+        } as any)
+      ).rejects.toThrow(/administrator accounts cannot be created/i);
+    });
   });
 });
 

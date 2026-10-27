@@ -22,7 +22,7 @@ import { Button } from '../components/ui/Button';
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { login, loginAsMock, isLoading, error, clearError } = useAuthStore();
+  const { login, loginAsMock, isLoading, error, clearError, isAuthenticated } = useAuthStore();
 
   const [email, setEmail] = useState('patient@example.com');
   const [password, setPassword] = useState('patient123');
@@ -72,14 +72,16 @@ export const LoginScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Brand Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backBtn}
-            accessibilityRole={'button' as AccessibilityRole}
-            accessibilityLabel="Close sign in"
-          >
-            <MaterialCommunityIcons name="close" size={24} color="#0F172A" />
-          </TouchableOpacity>
+          {isAuthenticated && (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+              accessibilityRole={'button' as AccessibilityRole}
+              accessibilityLabel="Close sign in"
+            >
+              <MaterialCommunityIcons name="close" size={24} color="#0F172A" />
+            </TouchableOpacity>
+          )}
           <View style={styles.logoBadge}>
             <MaterialCommunityIcons name="shield-lock-outline" size={32} color="#0284C7" />
           </View>
@@ -185,6 +187,20 @@ export const LoginScreen: React.FC = () => {
             size="lg"
             style={styles.signInBtn}
           />
+
+          {/* Sign Up Navigation Prompt */}
+          <View style={styles.signupPromptRow}>
+            <Text style={styles.signupPromptText}>Don't have an account yet?</Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('Signup', {
+                  initialRole: activeRoleTab === 'doctor' ? 'doctor' : 'patient',
+                })
+              }
+            >
+              <Text style={styles.signupLinkText}>Sign Up (Patient or Doctor)</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Cookie Security Badge */}
           <View style={styles.cookieSecurityNote}>
@@ -353,11 +369,30 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: '#0284C7',
   },
+  signupPromptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  signupPromptText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  signupLinkText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
   cookieSecurityNote: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
+    marginTop: 12,
     paddingTop: 14,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',

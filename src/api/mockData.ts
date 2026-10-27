@@ -332,7 +332,7 @@ export const INITIAL_PROVIDERS_RAW: Omit<Provider, 'nextAvailableDate' | 'availa
   },
 ];
 
-const SLOT_SCHEDULES: { startTime: string; endTime: string; period: 'morning' | 'afternoon' }[] = [
+export const SLOT_SCHEDULES: { startTime: string; endTime: string; period: 'morning' | 'afternoon' }[] = [
   { startTime: '09:00 AM', endTime: '09:30 AM', period: 'morning' },
   { startTime: '09:45 AM', endTime: '10:15 AM', period: 'morning' },
   { startTime: '10:30 AM', endTime: '11:00 AM', period: 'morning' },

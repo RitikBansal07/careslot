@@ -21,6 +21,7 @@ import { EmptyState } from '../components/ui/ScreenState';
 import { Button } from '../components/ui/Button';
 import { formatDisplayDate } from '../utils/dateHelpers';
 import { BookingConfirmation } from '../types/domain';
+import { useAuthStore } from '../store/useAuthStore';
 
 type ActiveTab = 'appointments' | 'favorites';
 
@@ -28,6 +29,7 @@ export const FavoritesScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<ActiveTab>('appointments');
 
+  const { logout } = useAuthStore();
   const { bookings, favoriteIds, cancelBooking } = useFavoritesStore();
   const { data: allProviders } = useProviders();
 
@@ -65,10 +67,20 @@ export const FavoritesScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header Title */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>My Health Hub</Text>
-          <Text style={styles.headerSubtitle}>
-            Manage your booked visits and saved doctor profiles
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>My Health Hub</Text>
+            <Text style={styles.headerSubtitle}>
+              Manage your booked visits and saved doctor profiles
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => logout()}
+            style={styles.logoutBtn}
+            accessibilityRole={'button' as AccessibilityRole}
+            accessibilityLabel="Sign out of CareSlot"
+          >
+            <MaterialCommunityIcons name="logout" size={20} color="#EF4444" />
+          </TouchableOpacity>
         </View>
 
         {/* Segmented Control Tabs */}
@@ -292,6 +304,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  logoutBtn: {
+    padding: 8,
   },
   headerTitle: {
     fontSize: 22,

@@ -48,3 +48,23 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
   },
 ];
 
+export let REGISTERED_ACCOUNTS: MockAccount[] = [...MOCK_ACCOUNTS];
+
+export function findRegisteredAccount(email: string): MockAccount | undefined {
+  return REGISTERED_ACCOUNTS.find(
+    (acc) => acc.user.email.toLowerCase().trim() === email.toLowerCase().trim()
+  );
+}
+
+export function addRegisteredAccount(account: MockAccount): void {
+  // Prevent duplicate registration for same email
+  REGISTERED_ACCOUNTS = REGISTERED_ACCOUNTS.filter(
+    (acc) => acc.user.email.toLowerCase().trim() !== account.user.email.toLowerCase().trim()
+  );
+  REGISTERED_ACCOUNTS.push(account);
+}
+
+export function resetRegisteredAccounts(): void {
+  REGISTERED_ACCOUNTS = [...MOCK_ACCOUNTS];
+}
+
