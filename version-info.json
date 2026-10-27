@@ -1,10 +1,10 @@
 {
   "version": "2.0.0",
-  "tag": "v2.0.0-build.6",
+  "tag": "v2.0.0-build.7",
   "major": 2,
   "minor": 0,
   "patch": 0,
   "isMajorBump": false,
-  "commit": "e855a6d",
-  "builtAt": "2026-10-27T14:41:00.274Z"
+  "commit": "13e0c3e",
+  "builtAt": "2026-10-27T15:10:40.565Z"
 }
