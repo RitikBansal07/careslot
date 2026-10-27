@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       bump_type:
-        description: 'Version Bump Selection (choose "major" to increment major version)'
+        description: 'Version Bump Selection'
         required: true
         default: 'auto'
         type: choice
@@ -16,6 +16,20 @@ on:
           - 'auto'
           - 'major'
           - 'minor'
+          - 'patch'
+      action:
+        description: 'Action to execute'
+        required: true
+        default: 'test_and_deploy'
+        type: choice
+        options:
+          - 'test_and_deploy'
+          - 'test_only'
+      release_note:
+        description: 'Optional manual release notes / description'
+        required: false
+        default: 'Manual workflow dispatch'
+        type: string
 
 permissions:
   contents: write
@@ -52,7 +66,9 @@ jobs:
   deploy:
     name: Build & Deploy with Version History
     needs: test
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: |
+      (github.event_name != 'workflow_dispatch' || inputs.action != 'test_only') &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -87,7 +103,7 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || inputs.release_note || 'Manual workflow dispatch' }}
           BUMP_TYPE: ${{ inputs.bump_type || 'auto' }}
 
       # Deploy to GitHub Pages preserving historical version directories

@@ -1,0 +1,52 @@
+name: Manual Test & Validation Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_typecheck:
+        description: 'Run TypeScript Typecheck (tsc --noEmit)'
+        required: true
+        default: true
+        type: boolean
+      run_tests:
+        description: 'Run Jest Unit & Integration Test Suite'
+        required: true
+        default: true
+        type: boolean
+      verify_web_bundle:
+        description: 'Verify Expo Web Production Bundle Build'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Manual Quality & Diagnostics Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: TypeScript Typecheck
+        if: ${{ inputs.run_typecheck }}
+        run: npx tsc --noEmit
+
+      - name: Execute Jest Test Suite
+        if: ${{ inputs.run_tests }}
+        run: npm test -- --ci --maxWorkers=2
+
+      - name: Verify Web Production Bundle
+        if: ${{ inputs.verify_web_bundle }}
+        run: npx expo export -p web

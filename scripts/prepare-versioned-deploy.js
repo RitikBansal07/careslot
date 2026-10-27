@@ -18,8 +18,9 @@ let patch = parseInt(patchStr, 10) || 0;
 
 let isMajorBump = false;
 let isMinorBump = false;
+let isPatchBump = false;
 
-// 1. Check if user requested a MAJOR version bump
+// 1. Check if user requested a MAJOR, MINOR, or PATCH version bump
 if (
   bumpInput === 'major' ||
   commitMsg.includes('[major]') ||
@@ -40,6 +41,14 @@ if (
   patch = 0;
   isMinorBump = true;
   console.log(`📦 User requested MINOR version bump -> ${major}.${minor}.${patch}`);
+} else if (
+  bumpInput === 'patch' ||
+  commitMsg.includes('[patch]') ||
+  commitMsg.includes('bump: patch')
+) {
+  patch += 1;
+  isPatchBump = true;
+  console.log(`🩹 User requested PATCH version bump -> ${major}.${minor}.${patch}`);
 }
 
 const effectiveVersion = `${major}.${minor}.${patch}`;
@@ -48,8 +57,8 @@ const versionTag = `v${effectiveVersion}-build.${runNumber}`;
 
 console.log(`Preparing deployment for: ${versionTag} (Commit: ${sha})`);
 
-// Update package.json version if a major or minor bump occurred
-if (isMajorBump || isMinorBump) {
+// Update package.json version if a semver bump occurred
+if (isMajorBump || isMinorBump || isPatchBump) {
   pkg.version = effectiveVersion;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 }

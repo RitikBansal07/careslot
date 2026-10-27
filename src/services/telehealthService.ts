@@ -131,3 +131,4 @@ class TelehealthService {
 }
 
 export const telehealthService = new TelehealthService();
+

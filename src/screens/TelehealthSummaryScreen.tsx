@@ -345,3 +345,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#0284C7',
   },
 });
+
