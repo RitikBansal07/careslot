@@ -1,12 +1,21 @@
 [
   {
+    "tag": "v2.0.0-build.4",
+    "version": "2.0.0",
+    "commit": "4f03a1e",
+    "isMajor": false,
+    "date": "2026-10-27T13:57:36.216Z",
+    "path": "/careslot/v/v2.0.0-build.4/",
+    "isLatest": true
+  },
+  {
     "tag": "v3.0.0-build.3",
     "version": "3.0.0",
     "commit": "fad6fb1",
     "isMajor": true,
     "date": "2026-10-27T13:30:39.559Z",
     "path": "/careslot/v/v3.0.0-build.3/",
-    "isLatest": true
+    "isLatest": false
   },
   {
     "tag": "v1.0.0-build.2",
