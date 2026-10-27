@@ -47,3 +47,4 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     description: 'Full administrative access: analytics, doctor approvals, system maintenance & audit logs.',
   },
 ];
+

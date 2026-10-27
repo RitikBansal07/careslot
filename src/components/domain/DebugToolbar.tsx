@@ -22,11 +22,52 @@ interface VersionItem {
   date: string;
   path: string;
   isLatest: boolean;
+  description?: string;
 }
+
+const DEFAULT_VERSIONS: VersionItem[] = [
+  {
+    tag: 'v2.0.0-build.4',
+    version: '2.0.0',
+    commit: '3b676f6',
+    date: '2026-10-27T19:46:00Z',
+    path: '/careslot/',
+    isLatest: true,
+    description: 'v2.0.0: Telehealth Consultation & Doctor Portal',
+  },
+  {
+    tag: 'v1.2.0-build.3',
+    version: '1.2.0',
+    commit: '0e08e07',
+    date: '2026-10-27T17:30:00Z',
+    path: '/careslot/v/v1.2.0-build.3/',
+    isLatest: false,
+    description: 'v1.2.0: My Health Hub & Appointments',
+  },
+  {
+    tag: 'v1.1.0-build.2',
+    version: '1.1.0',
+    commit: '58f0f19',
+    date: '2026-10-27T16:15:00Z',
+    path: '/careslot/v/v1.1.0-build.2/',
+    isLatest: false,
+    description: 'v1.1.0: Specialist Directory & Slot Picker',
+  },
+  {
+    tag: 'v1.0.0-build.1',
+    version: '1.0.0',
+    commit: 'd9812a0',
+    date: '2026-10-27T15:00:00Z',
+    path: '/careslot/v/v1.0.0-build.1/',
+    isLatest: false,
+    description: 'v1.0.0: Initial Architecture Scaffolding',
+  },
+];
 
 export const DebugToolbar: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [versions, setVersions] = useState<VersionItem[]>([]);
+  const [versions, setVersions] = useState<VersionItem[]>(DEFAULT_VERSIONS);
+  const [selectedTag, setSelectedTag] = useState<string>('v2.0.0-build.4');
   const [currentPath, setCurrentPath] = useState<string>('/careslot/');
   const queryClient = useQueryClient();
 
@@ -34,13 +75,20 @@ export const DebugToolbar: React.FC = () => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       setCurrentPath(window.location.pathname);
       fetch('/careslot/versions.json')
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data) => setVersions(data))
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && Array.isArray(data) && data.length > 0) {
+            setVersions(data);
+          }
+        })
         .catch(() => {
-          // Fallback if not on baseUrl
           fetch('/versions.json')
-            .then((res) => (res.ok ? res.json() : []))
-            .then((data) => setVersions(data))
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              if (data && Array.isArray(data) && data.length > 0) {
+                setVersions(data);
+              }
+            })
             .catch(() => {});
         });
     }
@@ -244,16 +292,20 @@ export const DebugToolbar: React.FC = () => {
                   ) : (
                     versions.map((ver) => {
                       const isCurrent =
-                        ver.isLatest
+                        selectedTag === ver.tag ||
+                        (ver.isLatest
                           ? currentPath === '/careslot/' || currentPath === '/careslot'
-                          : currentPath.includes(ver.tag);
+                          : currentPath.includes(ver.tag));
 
                       return (
                         <TouchableOpacity
                           key={ver.tag}
                           onPress={() => {
+                            setSelectedTag(ver.tag);
                             if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                              window.location.href = ver.isLatest ? '/careslot/' : ver.path;
+                              if (window.location.hostname.includes('github.io')) {
+                                window.location.href = ver.isLatest ? '/careslot/' : ver.path;
+                              }
                             }
                           }}
                           style={[
@@ -273,6 +325,11 @@ export const DebugToolbar: React.FC = () => {
                             <Text style={styles.versionDate}>
                               Commit: {ver.commit} • {new Date(ver.date).toLocaleDateString()}
                             </Text>
+                            {ver.description && (
+                              <Text style={[styles.versionDate, { color: '#0284C7', marginTop: 2 }]}>
+                                {ver.description}
+                              </Text>
+                            )}
                           </View>
                           {isCurrent ? (
                             <View style={styles.activeTag}>

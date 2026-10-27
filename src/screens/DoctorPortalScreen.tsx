@@ -21,7 +21,7 @@ import { formatDisplayDate } from '../utils/dateHelpers';
 export const DoctorPortalScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuthStore();
-  const bookings = useFavoritesStore((state) => state.bookings);
+  const { bookings, addBooking } = useFavoritesStore();
 
   const handleLogout = async () => {
     await logout();
@@ -30,6 +30,58 @@ export const DoctorPortalScreen: React.FC = () => {
 
   const handleLaunchTelehealth = (bookingId: string) => {
     navigation.navigate('TelehealthCall', { bookingId });
+  };
+
+  const handleSimulateBooking = () => {
+    const demoId = `CS-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newDemo = {
+      bookingId: demoId,
+      provider: {
+        id: 'p-1',
+        name: user?.name || 'Dr. Sarah Jenkins',
+        title: 'MD, FACP',
+        specialty: 'Primary Care' as const,
+        rating: 4.95,
+        reviewCount: 312,
+        experienceYears: 14,
+        bio: 'Board-certified internist focusing on preventive healthcare.',
+        location: {
+          clinicName: 'Metropolitan Health Center',
+          address: '450 Lexington Ave, Suite 600',
+          city: 'New York',
+          state: 'NY',
+          distanceMiles: 0.8,
+        },
+        consultationFee: 120,
+        avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
+        languages: ['English', 'Spanish'],
+        acceptedInsurances: ['Blue Cross Blue Shield', 'Aetna', 'UnitedHealthcare'],
+        nextAvailableDate: 'Today',
+        availableSlotsCount: 5,
+      },
+      slot: {
+        id: `slot-sim-${Date.now()}`,
+        providerId: 'p-1',
+        date: new Date().toISOString().split('T')[0],
+        startTime: '11:00 AM',
+        endTime: '11:30 AM',
+        period: 'morning' as const,
+        isAvailable: false,
+      },
+      patientName: 'Alex Morgan',
+      email: 'patient@example.com',
+      phone: '(555) 234-5678',
+      reason: 'Telehealth follow-up on allergy therapy & prescription renewal',
+      insuranceProvider: 'Blue Cross Blue Shield',
+      visitType: 'telehealth' as const,
+      telehealthChannelId: `careslot-${demoId.toLowerCase()}`,
+      telehealthDoctorStatus: 'in-room' as const,
+      consultationNotes: 'Patient requests video consultation for seasonal allergy check.',
+      prescriptions: ['Cetirizine 10mg once daily', 'Saline Spray PRN'],
+      bookedAt: new Date().toISOString(),
+      status: 'confirmed' as const,
+    };
+    addBooking(newDemo);
   };
 
   return (
@@ -94,6 +146,27 @@ export const DoctorPortalScreen: React.FC = () => {
             <Text style={styles.metricValue}>4.95 ★</Text>
             <Text style={styles.metricLabel}>Patient Rating</Text>
           </View>
+        </View>
+
+        {/* Live Multi-Session Sync Banner */}
+        <View style={styles.syncCard}>
+          <View style={styles.syncRow}>
+            <View style={styles.pulseDot} />
+            <Text style={styles.syncText}>
+              Real-Time Cross-Window Session Sync Active
+            </Text>
+          </View>
+          <Text style={styles.syncSub}>
+            Bookings made in any window or by patient accounts appear here immediately.
+          </Text>
+          <TouchableOpacity
+            onPress={handleSimulateBooking}
+            style={styles.simBookingBtn}
+            accessibilityRole={'button' as AccessibilityRole}
+          >
+            <MaterialCommunityIcons name="plus-circle" size={16} color="#0284C7" />
+            <Text style={styles.simBookingText}>Simulate Patient Telehealth Booking</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Patient Appointment Queue */}
@@ -295,6 +368,54 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'center',
   },
+  syncCard: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    marginBottom: 20,
+  },
+  syncRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#16A34A',
+  },
+  syncText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  syncSub: {
+    fontSize: 12,
+    color: '#166534',
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  simBookingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  simBookingText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
   sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -405,3 +526,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
   },
 });
+

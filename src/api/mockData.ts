@@ -1,4 +1,4 @@
-import { Provider, TimeSlot, Specialty } from '../types/domain';
+import { Provider, TimeSlot, Specialty, BookingConfirmation } from '../types/domain';
 import { getRelativeDateString, getNextSevenDays } from '../utils/dateHelpers';
 
 export const SPECIALTIES: Specialty[] = [
@@ -388,5 +388,57 @@ export function generateInitialProviders(slots: TimeSlot[]): Provider[] {
       availableSlotsCount: providerSlots.length,
     };
   });
+}
+
+export function createDemoInitialBookings(): BookingConfirmation[] {
+  return [
+    {
+      bookingId: 'CS-842109',
+      provider: {
+        id: 'p-1',
+        name: 'Dr. Sarah Jenkins',
+        title: 'MD, FACP',
+        specialty: 'Primary Care',
+        rating: 4.95,
+        reviewCount: 312,
+        experienceYears: 14,
+        bio: 'Board-certified internist focusing on preventive healthcare, chronic disease management, and comprehensive adult medicine.',
+        location: {
+          clinicName: 'Metropolitan Health Center',
+          address: '450 Lexington Ave, Suite 600',
+          city: 'New York',
+          state: 'NY',
+          distanceMiles: 0.8,
+        },
+        consultationFee: 120,
+        avatarUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
+        languages: ['English', 'Spanish'],
+        acceptedInsurances: ['Blue Cross Blue Shield', 'Aetna', 'UnitedHealthcare', 'Cigna'],
+        nextAvailableDate: getRelativeDateString(0),
+        availableSlotsCount: 6,
+      },
+      slot: {
+        id: 'slot-p-1-demo',
+        providerId: 'p-1',
+        date: getRelativeDateString(0),
+        startTime: '10:00 AM',
+        endTime: '10:30 AM',
+        period: 'morning',
+        isAvailable: false,
+      },
+      patientName: 'Alex Morgan',
+      email: 'patient@example.com',
+      phone: '(555) 234-5678',
+      reason: 'Annual Telehealth Consultation & Wellness Review',
+      insuranceProvider: 'Blue Cross Blue Shield',
+      visitType: 'telehealth',
+      telehealthChannelId: 'careslot-cs-842109',
+      telehealthDoctorStatus: 'in-room',
+      consultationNotes: 'Patient scheduled for virtual review of blood pressure and seasonal allergy therapy.',
+      prescriptions: ['Cetirizine 10mg - 1 tablet daily PRN', 'Fluticasone Propionate Nasal Spray'],
+      bookedAt: new Date().toISOString(),
+      status: 'confirmed',
+    },
+  ];
 }
 

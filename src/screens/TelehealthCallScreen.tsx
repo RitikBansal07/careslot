@@ -15,6 +15,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import { useFavoritesStore } from '../store/useFavoritesStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { telehealthService } from '../services/telehealthService';
 import { Button } from '../components/ui/Button';
 
@@ -22,6 +23,9 @@ export const TelehealthCallScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'TelehealthCall'>>();
   const { bookingId } = route.params;
+
+  const { user } = useAuthStore();
+  const isDoctor = user?.role === 'doctor';
 
   const bookings = useFavoritesStore((state) => state.bookings);
   const booking = bookings.find((b) => b.bookingId === bookingId);
@@ -31,8 +35,45 @@ export const TelehealthCallScreen: React.FC = () => {
   const [isCamOff, setIsCamOff] = useState(false);
   const [audioLevel, setAudioLevel] = useState(4);
   const [showInCallNotes, setShowInCallNotes] = useState(false);
+  const [isPeerConnected, setIsPeerConnected] = useState(false);
+  const [peerRole, setPeerRole] = useState<'doctor' | 'patient' | null>(null);
 
   const selfVideoRef = useRef<any>(null);
+
+  // Cross-tab real-time video signaling between Patient and Doctor tabs
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel(`careslot_telehealth_${bookingId}`);
+      const myRole = isDoctor ? 'doctor' : 'patient';
+      const myName = isDoctor ? (user?.name || booking?.provider.name) : booking?.patientName;
+
+      // Broadcast entry to other open tabs
+      channel.postMessage({ type: 'JOIN', role: myRole, name: myName });
+
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (data?.type === 'JOIN' || data?.type === 'ACK') {
+          if (data.role !== myRole) {
+            setIsPeerConnected(true);
+            setPeerRole(data.role);
+            if (data.type === 'JOIN') {
+              channel.postMessage({ type: 'ACK', role: myRole, name: myName });
+            }
+          }
+        } else if (data?.type === 'LEAVE') {
+          if (data.role !== myRole) {
+            setIsPeerConnected(false);
+            setPeerRole(null);
+          }
+        }
+      };
+
+      return () => {
+        channel.postMessage({ type: 'LEAVE', role: myRole });
+        channel.close();
+      };
+    }
+  }, [bookingId, isDoctor]);
 
   // Call duration timer
   useEffect(() => {
@@ -100,6 +141,17 @@ export const TelehealthCallScreen: React.FC = () => {
     );
   }
 
+  const remoteAvatar = isDoctor
+    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+    : booking.provider.avatarUrl;
+  const remoteName = isDoctor ? booking.patientName : booking.provider.name;
+  const remoteSub = isDoctor
+    ? `Patient • ${booking.insuranceProvider}`
+    : `${booking.provider.specialty} • ${booking.provider.title}`;
+  const selfName = isDoctor
+    ? `${booking.provider.name.split(' ')[0]} ${booking.provider.name.split(' ')[1] || ''} (Doctor - You)`
+    : `${booking.patientName} (You)`;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -122,28 +174,53 @@ export const TelehealthCallScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Doctor Main Video Stream Viewport */}
+        {/* Real-time Multi-Session Sync Status Bar */}
+        <View
+          style={[
+            styles.syncStatusBar,
+            isPeerConnected ? styles.syncStatusBarConnected : styles.syncStatusBarWaiting,
+          ]}
+        >
+          <MaterialCommunityIcons
+            name={isPeerConnected ? 'account-multiple-check' : 'account-clock'}
+            size={14}
+            color={isPeerConnected ? '#15803D' : '#A16207'}
+          />
+          <Text
+            style={[
+              styles.syncStatusText,
+              isPeerConnected ? styles.syncStatusTextConnected : styles.syncStatusTextWaiting,
+            ]}
+          >
+            {isPeerConnected
+              ? `Both ${isDoctor ? 'Patient & Doctor' : 'Doctor & Patient'} Live in this Room`
+              : isDoctor
+              ? `Doctor View Active • Listening for Patient ${booking.patientName}`
+              : `Patient View Active • Connected to Dr. ${booking.provider.name}`}
+          </Text>
+        </View>
+
+        {/* Main Video Stream Viewport */}
         <View style={styles.doctorViewport}>
           <Image
-            source={{ uri: booking.provider.avatarUrl }}
+            source={{ uri: remoteAvatar }}
             style={styles.doctorBackgroundBlur}
             blurRadius={20}
           />
           <View style={styles.doctorVideoOverlay}>
-            <Image
-              source={{ uri: booking.provider.avatarUrl }}
-              style={styles.doctorMainAvatar}
-            />
+            <Image source={{ uri: remoteAvatar }} style={styles.doctorMainAvatar} />
             <View style={styles.doctorInfoCard}>
               <View style={styles.doctorNameRow}>
-                <Text style={styles.doctorName}>{booking.provider.name}</Text>
-                <MaterialCommunityIcons name="check-decagram" size={18} color="#0284C7" />
+                <Text style={styles.doctorName}>{remoteName}</Text>
+                <MaterialCommunityIcons
+                  name={isDoctor ? 'account-check' : 'check-decagram'}
+                  size={18}
+                  color={isDoctor ? '#16A34A' : '#0284C7'}
+                />
               </View>
-              <Text style={styles.doctorSpecialty}>
-                {booking.provider.specialty} • {booking.provider.title}
-              </Text>
-              
-              {/* Doctor Talking Audio Visualizer */}
+              <Text style={styles.doctorSpecialty}>{remoteSub}</Text>
+
+              {/* Talking Audio Visualizer */}
               <View style={styles.audioWaveContainer}>
                 {[1, 2, 3, 4, 5].map((bar) => (
                   <View
@@ -189,7 +266,7 @@ export const TelehealthCallScreen: React.FC = () => {
             )}
 
             <View style={styles.selfPipBadge}>
-              <Text style={styles.selfPipName}>{booking.patientName} (You)</Text>
+              <Text style={styles.selfPipName} numberOfLines={1}>{selfName}</Text>
               {isMicMuted && (
                 <MaterialCommunityIcons name="microphone-off" size={12} color="#EF4444" />
               )}
@@ -374,6 +451,33 @@ const styles = StyleSheet.create({
     color: '#4ADE80',
     fontSize: 11,
     fontWeight: '600',
+  },
+  syncStatusBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+  },
+  syncStatusBarConnected: {
+    backgroundColor: '#DCFCE7',
+    borderBottomColor: '#BBF7D0',
+  },
+  syncStatusBarWaiting: {
+    backgroundColor: '#FEF9C3',
+    borderBottomColor: '#FEF08A',
+  },
+  syncStatusText: {
+    fontSize: 11,
+    fontWeight: '700',
+    flex: 1,
+  },
+  syncStatusTextConnected: {
+    color: '#15803D',
+  },
+  syncStatusTextWaiting: {
+    color: '#854D0E',
   },
   doctorViewport: {
     flex: 1,

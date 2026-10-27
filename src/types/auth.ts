@@ -31,3 +31,4 @@ export interface MockAccount {
   badgeColor: string;
   description: string;
 }
+
