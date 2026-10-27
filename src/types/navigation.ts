@@ -15,6 +15,9 @@ export type RootStackParamList = {
   TelehealthWaitingRoom: { bookingId: string };
   TelehealthCall: { bookingId: string };
   TelehealthSummary: { bookingId: string; durationSeconds: number };
+  Login: undefined;
+  DoctorPortal: undefined;
+  AdminPortal: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<

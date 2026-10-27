@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,7 +16,11 @@ import { FavoritesScreen } from './src/screens/FavoritesScreen';
 import { TelehealthWaitingRoomScreen } from './src/screens/TelehealthWaitingRoomScreen';
 import { TelehealthCallScreen } from './src/screens/TelehealthCallScreen';
 import { TelehealthSummaryScreen } from './src/screens/TelehealthSummaryScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
+import { DoctorPortalScreen } from './src/screens/DoctorPortalScreen';
+import { AdminPortalScreen } from './src/screens/AdminPortalScreen';
 import { useFavoritesStore } from './src/store/useFavoritesStore';
+import { useAuthStore } from './src/store/useAuthStore';
 import { VersionBanner } from './src/components/ui/VersionBanner';
 
 const queryClient = new QueryClient({
@@ -83,6 +87,10 @@ function MainTabsNavigator() {
 }
 
 export default function App() {
+  useEffect(() => {
+    useAuthStore.getState().initialize();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <VersionBanner />
@@ -125,6 +133,21 @@ export default function App() {
               name="TelehealthSummary"
               component={TelehealthSummaryScreen}
               options={{ gestureEnabled: false, animation: 'slide_from_bottom' }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ animation: 'slide_from_bottom' }}
+            />
+            <Stack.Screen
+              name="DoctorPortal"
+              component={DoctorPortalScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+              name="AdminPortal"
+              component={AdminPortalScreen}
+              options={{ animation: 'slide_from_right' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

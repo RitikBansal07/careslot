@@ -22,6 +22,7 @@ import { DebugToolbar } from '../components/domain/DebugToolbar';
 import { SPECIALTIES } from '../api/mockData';
 import { useFavoritesStore } from '../store/useFavoritesStore';
 import { Specialty } from '../types/domain';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const ProviderListScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -31,6 +32,7 @@ export const ProviderListScreen: React.FC = () => {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
+  const { user, isAuthenticated } = useAuthStore();
 
   const {
     data: allProviders,
@@ -79,7 +81,7 @@ export const ProviderListScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header App Brand */}
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerLeft}>
             <View style={styles.brandRow}>
               <View style={styles.brandIcon}>
                 <MaterialCommunityIcons name="heart-pulse" size={20} color="#FFFFFF" />
@@ -88,6 +90,72 @@ export const ProviderListScreen: React.FC = () => {
             </View>
             <Text style={styles.headerSubtitle}>Book trusted healthcare providers in seconds</Text>
           </View>
+
+          {/* User Auth Portal / Login Button */}
+          {isAuthenticated && user ? (
+            <TouchableOpacity
+              onPress={() => {
+                if (user.role === 'doctor') navigation.navigate('DoctorPortal');
+                else if (user.role === 'admin') navigation.navigate('AdminPortal');
+                else navigation.navigate('Login');
+              }}
+              style={[
+                styles.userPill,
+                user.role === 'doctor'
+                  ? styles.userPillDoctor
+                  : user.role === 'admin'
+                  ? styles.userPillAdmin
+                  : styles.userPillPatient,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Logged in as ${user.name}`}
+            >
+              <MaterialCommunityIcons
+                name={
+                  user.role === 'doctor'
+                    ? 'doctor'
+                    : user.role === 'admin'
+                    ? 'shield-crown'
+                    : 'account-circle'
+                }
+                size={16}
+                color={
+                  user.role === 'doctor'
+                    ? '#166534'
+                    : user.role === 'admin'
+                    ? '#6B21A8'
+                    : '#0369A1'
+                }
+              />
+              <Text
+                style={[
+                  styles.userPillText,
+                  user.role === 'doctor'
+                    ? styles.userPillTextDoctor
+                    : user.role === 'admin'
+                    ? styles.userPillTextAdmin
+                    : styles.userPillTextPatient,
+                ]}
+                numberOfLines={1}
+              >
+                {user.role === 'doctor'
+                  ? 'Dr. Portal'
+                  : user.role === 'admin'
+                  ? 'Admin'
+                  : user.name.split(' ')[0]}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              style={styles.loginPill}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in or test mock accounts"
+            >
+              <MaterialCommunityIcons name="login-variant" size={15} color="#0284C7" />
+              <Text style={styles.loginPillText}>Sign In</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Search Bar */}
@@ -228,6 +296,62 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  userPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  userPillDoctor: {
+    backgroundColor: '#DCFCE7',
+    borderColor: '#BBF7D0',
+  },
+  userPillAdmin: {
+    backgroundColor: '#F3E8FF',
+    borderColor: '#E9D5FF',
+  },
+  userPillPatient: {
+    backgroundColor: '#E0F2FE',
+    borderColor: '#BAE6FD',
+  },
+  userPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  userPillTextDoctor: {
+    color: '#166534',
+  },
+  userPillTextAdmin: {
+    color: '#6B21A8',
+  },
+  userPillTextPatient: {
+    color: '#0369A1',
+  },
+  loginPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  loginPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
   },
   brandRow: {
     flexDirection: 'row',

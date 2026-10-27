@@ -15,6 +15,7 @@ interface TextInputFieldProps extends TextInputProps {
   required?: boolean;
   containerStyle?: ViewStyle;
   leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export const TextInputField: React.FC<TextInputFieldProps> = ({
@@ -24,6 +25,7 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
   required,
   containerStyle,
   leftIcon,
+  rightIcon,
   style,
   ...inputProps
 }) => {
@@ -68,6 +70,7 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
           style={[styles.input, style]}
           {...inputProps}
         />
+        {rightIcon && <View style={styles.rightIconContainer}>{rightIcon}</View>}
       </View>
 
       {hasError ? (
@@ -123,6 +126,9 @@ const styles = StyleSheet.create({
   },
   leftIconContainer: {
     marginRight: 8,
+  },
+  rightIconContainer: {
+    marginLeft: 8,
   },
   input: {
     flex: 1,
